@@ -36,6 +36,11 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("navigator.clipboard",page)
         self.assertIn("DEFAULT_APPDATA",page)
         self.assertIn("APPDATA_MOUNT_MODE",page)
+        self.assertIn("Detected appdata storage",page)
+        scan=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/wrm-storage-scan.sh").read_text()
+        self.assertIn("DOCKER_APP_CONFIG_PATH",scan)
+        self.assertIn("Read/Write - Slave",scan)
+        self.assertIn("docker inspect",scan)
 
     def test_release_assets_are_valid_and_parameterized(self):
         with tempfile.TemporaryDirectory() as directory:
