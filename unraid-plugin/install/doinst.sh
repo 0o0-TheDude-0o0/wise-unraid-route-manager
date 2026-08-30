@@ -12,17 +12,28 @@ fi
 # Templates intentionally leave their host path blank so Unraid can apply its
 # own default for each installation.
 default_appdata=""
+docker_dir=""
 for source in /var/local/emhttp/var.ini /boot/config/docker.cfg /boot/config/plugins/dockerMan/docker.cfg; do
   if [ -r "$source" ]; then
-    value=$(grep -oE 'DOCKER_APPDATA[[:space:]]*=[[:space:]]*"?[^"[:space:]]+' "$source" 2>/dev/null | sed -n 's/.*=[[:space:]]*"\{0,1\}//p' | head -n 1)
+    value=$(grep -oE '(DOCKER_APPDATA|DOCKER_APPDATA_PATH|DOCKER_DEFAULT_APPDATA)[[:space:]]*=[[:space:]]*"?[^"[:space:]]+' "$source" 2>/dev/null | sed -n 's/.*=[[:space:]]*"\{0,1\}//p' | head -n 1)
     if [ -n "$value" ]; then
       default_appdata=$value
       break
     fi
+    value=$(grep -oE 'DOCKER_DIR[[:space:]]*=[[:space:]]*"?[^"[:space:]]+' "$source" 2>/dev/null | sed -n 's/.*=[[:space:]]*"\{0,1\}//p' | head -n 1)
+    if [ -n "$value" ] && [ -z "$docker_dir" ]; then docker_dir=$value; fi
   fi
 done
 if [ -z "$default_appdata" ]; then
   default_appdata=$(grep -hoE '/mnt/(disks|cache|user)/[^"[:space:]]*/appdata/?' /var/local/emhttp/var.ini /boot/config/docker.cfg /boot/config/plugins/dockerMan/docker.cfg 2>/dev/null | head -n 1 || true)
+fi
+# Some Unraid versions persist only DOCKER_DIR. When it points into a sibling
+# DockerImage/docker directory, infer the configured appdata directory beside it.
+if [ -z "$default_appdata" ] && [ -n "$docker_dir" ]; then
+  case "$docker_dir" in
+    /mnt/*/DockerImage/docker|/mnt/*/DockerImage/docker/)
+      default_appdata=${docker_dir%/DockerImage/docker*}/appdata/ ;;
+  esac
 fi
 if [ -n "$default_appdata" ]; then
   default_appdata=${default_appdata%/}/
