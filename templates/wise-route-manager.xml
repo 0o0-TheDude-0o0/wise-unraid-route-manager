@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>Wise Route Manager</Name>
-  <Repository>ghcr.io/OWNER/wise-route-manager:latest</Repository>
-  <Registry>https://github.com/OWNER/wise-route-manager/pkgs/container/wise-route-manager</Registry>
+  <Repository>ghcr.io/OWNER/wise-unraid-route-manager:latest</Repository>
+  <Registry>https://github.com/OWNER/wise-unraid-route-manager/pkgs/container/wise-unraid-route-manager</Registry>
   <Network>br0</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/OWNER/wise-route-manager/issues</Support>
-  <Project>https://github.com/OWNER/wise-route-manager</Project>
+  <Support>https://github.com/OWNER/wise-unraid-route-manager/issues</Support>
+  <Project>https://github.com/OWNER/wise-unraid-route-manager</Project>
   <Overview>Safely coordinates Technitium split DNS, LAN reverse-proxy routes, and Pangolin public resources from one clear preview-and-approve workflow. Discovery is read-only; live provider changes stay disabled until you explicitly enable them.</Overview>
   <Category>Network:Other</Category>
   <WebUI>http://[IP]:[PORT:9080]</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/OWNER/wise-route-manager/main/templates/wise-route-manager.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/OWNER/wise-unraid-route-manager/main/templates/wise-route-manager.xml</TemplateURL>
   <Config Name="1. Appdata" Target="/config" Default="/mnt/user/appdata/wise-route-manager" Mode="rw" Description="Keep this path: it stores route state, encrypted provider credentials, audit history, backups, and generated proxy configuration. Do not delete it when recreating the container." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="2. Master key path" Target="WISE_MASTER_KEY_FILE" Default="/config/master.key" Mode="" Description="Advanced: path inside the container to the mode-0600 encryption key. Keep the default unless the key is mounted separately and backed up securely." Type="Variable" Display="advanced" Required="true" Mask="false"/>
   <Config Name="3. Enable live changes" Target="WISE_ENABLE_PROVIDER_MUTATIONS" Default="0" Mode="" Description="Recommended: 0 during setup. Change to 1 only after integrations, read-only discovery, backups, certificates, and the first preview have been verified." Type="Variable" Display="advanced" Required="true" Mask="false"/>

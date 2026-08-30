@@ -38,7 +38,7 @@ class PackagingTests(unittest.TestCase):
             output=Path(directory); plugin=ET.parse(output/"wise.route.manager.plg").getroot(); template=ET.parse(output/"wise-route-manager.xml").getroot(); lite=ET.parse(output/"wise-route-manager-lite.xml").getroot()
             self.assertEqual(plugin.attrib["version"],"0.1.0")
             self.assertIn("example/wise-route-manager",plugin.attrib["pluginURL"])
-            self.assertEqual(template.findtext("Repository"),"ghcr.io/example/wise-route-manager:latest")
+            self.assertEqual(template.findtext("Repository"),"ghcr.io/example/wise-unraid-route-manager:latest")
             self.assertEqual(lite.findtext("Name"),"Wise Route Manager Lite")
             self.assertEqual(next(item for item in lite.findall("Config") if item.attrib.get("Target")=="WISE_EDITION").attrib.get("Default"),"lite")
             self.assertTrue((output/"SHA256SUMS").exists())

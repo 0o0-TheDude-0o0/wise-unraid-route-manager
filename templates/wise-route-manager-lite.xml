@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>Wise Route Manager Lite</Name>
-  <Repository>ghcr.io/OWNER/wise-route-manager:latest</Repository>
-  <Registry>https://github.com/OWNER/wise-route-manager/pkgs/container/wise-route-manager</Registry>
+  <Repository>ghcr.io/OWNER/wise-unraid-route-manager:latest</Repository>
+  <Registry>https://github.com/OWNER/wise-unraid-route-manager/pkgs/container/wise-unraid-route-manager</Registry>
   <Network>br0</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/OWNER/wise-route-manager/issues</Support>
-  <Project>https://github.com/OWNER/wise-route-manager</Project>
+  <Support>https://github.com/OWNER/wise-unraid-route-manager/issues</Support>
+  <Project>https://github.com/OWNER/wise-unraid-route-manager</Project>
   <Overview>Friendly route-only workspace for discovering, auditing, adopting, and safely reconciling Technitium DNS, an Unraid LAN reverse proxy, and Pangolin routes. Discovery is read-only, and every live change requires an explicit approval.</Overview>
   <Category>Network:Other</Category>
   <WebUI>http://[IP]:[PORT:9080]</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/OWNER/wise-route-manager/main/templates/wise-route-manager-lite.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/OWNER/wise-unraid-route-manager/main/templates/wise-route-manager-lite.xml</TemplateURL>
   <Config Name="1. Appdata" Target="/config" Default="/mnt/user/appdata/wise-route-manager-lite" Mode="rw" Description="Keep this path: it stores route state, encrypted provider credentials, audit history, backups, and generated proxy configuration. Do not delete it when recreating the container." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="2. Edition (fixed)" Target="WISE_EDITION" Default="lite" Mode="" Description="Lite keeps the interface focused on route discovery, health, review, and correction. Leave this value as lite." Type="Variable" Display="advanced" Required="true" Mask="false"/>
   <Config Name="3. Master key path" Target="WISE_MASTER_KEY_FILE" Default="/config/master.key" Mode="" Description="Advanced: path inside the container to the mode-0600 encryption key. Keep the default unless the key is mounted separately and backed up securely." Type="Variable" Display="advanced" Required="true" Mask="false"/>
