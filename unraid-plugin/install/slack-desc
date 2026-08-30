@@ -1,0 +1,5 @@
+wise.route.manager: Wise Route Manager Unraid integration
+wise.route.manager:
+wise.route.manager: Adds a Tools page that links to the independently running
+wise.route.manager: Wise Route Manager container. The plugin stores no provider
+wise.route.manager: credentials and does not own or stop the container.

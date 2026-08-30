@@ -1,0 +1,26 @@
+services:
+  wise-cert-agent:
+    image: ghcr.io/OWNER/wise-route-manager-cert-agent:latest
+    user: "1000:1000"
+    read_only: true
+    restart: unless-stopped
+    command:
+      - --allowed-name
+      - "*.example.com"
+    ports:
+      - "PRIVATE_NEWT_IP:9443:9443"
+    volumes:
+      - ./config/letsencrypt/acme.json:/traefik/acme.json:ro
+      - ./cert-agent/tls:/run/tls:ro
+      - ./cert-agent/token:/run/secrets/cert-agent-token:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:noexec,nosuid,size=8m
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import ssl,urllib.request; c=ssl.create_default_context(cafile='/run/tls/tls.crt'); c.check_hostname=False; urllib.request.urlopen('https://127.0.0.1:9443/healthz',context=c,timeout=2)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3

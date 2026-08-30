@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Wise Route Manager Lite</Name>
+  <Repository>ghcr.io/OWNER/wise-route-manager:latest</Repository>
+  <Registry>https://github.com/OWNER/wise-route-manager/pkgs/container/wise-route-manager</Registry>
+  <Network>br0</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/OWNER/wise-route-manager/issues</Support>
+  <Project>https://github.com/OWNER/wise-route-manager</Project>
+  <Overview>Friendly route-only workspace for discovering, auditing, adopting, and safely reconciling Technitium DNS, an Unraid LAN reverse proxy, and Pangolin routes. Discovery is read-only, and every live change requires an explicit approval.</Overview>
+  <Category>Network:Other</Category>
+  <WebUI>http://[IP]:[PORT:9080]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/OWNER/wise-route-manager/main/templates/wise-route-manager-lite.xml</TemplateURL>
+  <Config Name="1. Appdata" Target="/config" Default="/mnt/user/appdata/wise-route-manager-lite" Mode="rw" Description="Keep this path: it stores route state, encrypted provider credentials, audit history, backups, and generated proxy configuration. Do not delete it when recreating the container." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="2. Edition (fixed)" Target="WISE_EDITION" Default="lite" Mode="" Description="Lite keeps the interface focused on route discovery, health, review, and correction. Leave this value as lite." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="3. Master key path" Target="WISE_MASTER_KEY_FILE" Default="/config/master.key" Mode="" Description="Advanced: path inside the container to the mode-0600 encryption key. Keep the default unless the key is mounted separately and backed up securely." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="4. Enable live changes" Target="WISE_ENABLE_PROVIDER_MUTATIONS" Default="0" Mode="" Description="Recommended: 0 during setup. Change to 1 only after integrations, read-only discovery, backups, certificates, and the first preview have been verified." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="5. Certificate check interval" Target="WISE_CERT_RENEWAL_INTERVAL_SECONDS" Default="21600" Mode="" Description="Advanced: seconds between validated renewal checks (minimum 300). Automatic installation also needs first-sync approval and live changes enabled." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="6. LAN TLS certificate" Target="/config/tls/tls.crt" Default="" Mode="ro" Description="Required for LAN HTTPS: a user-supplied PEM certificate or full chain covering every managed LAN hostname. It must be readable by container UID 1000." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="7. LAN TLS private key" Target="/config/tls/tls.key" Default="" Mode="ro" Description="Required for LAN HTTPS: the matching unencrypted PEM private key. Restrict host permissions and keep this mapping read-only." Type="Path" Display="always" Required="true" Mask="true"/>
+  <Config Name="8. Management UI" Target="9080" Default="9080" Mode="tcp" Description="Authenticated Route Manager Lite web interface. Open it from the WebUI link after the container is running." Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="9. LAN HTTP fallback" Target="80" Default="80" Mode="tcp" Description="Optional bundled Caddy HTTP listener that redirects to HTTPS. Leave unused if another LAN proxy owns this port." Type="Port" Display="always" Required="false" Mask="false"/>
+  <Config Name="10. LAN HTTPS fallback" Target="443" Default="443" Mode="tcp" Description="Optional bundled Caddy HTTPS listener. Leave unused if an existing LAN proxy owns this port; discovered proxies are never overwritten automatically." Type="Port" Display="always" Required="false" Mask="false"/>
+</Container>

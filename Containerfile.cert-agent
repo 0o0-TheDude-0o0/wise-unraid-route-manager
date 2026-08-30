@@ -1,0 +1,14 @@
+FROM docker.io/library/python:3.14.0-alpine3.22
+ARG APP_VERSION=0.1.0-dev
+LABEL org.opencontainers.image.title="Wise Pangolin Certificate Agent" \
+      org.opencontainers.image.description="Read-only allowlisted certificate delivery for Route Manager" \
+      org.opencontainers.image.version="${APP_VERSION}" \
+      org.opencontainers.image.licenses="Apache-2.0"
+RUN addgroup -S -g 1000 wiseagent && adduser -S -D -H -u 1000 -G wiseagent wiseagent && mkdir -p /app && chown wiseagent:wiseagent /app
+COPY --chown=wiseagent:wiseagent app /app/app
+COPY --chown=wiseagent:wiseagent requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+ENV PYTHONPATH=/app PYTHONUNBUFFERED=1
+USER wiseagent
+EXPOSE 9443
+ENTRYPOINT ["python3","-m","app.vps_cert_agent"]

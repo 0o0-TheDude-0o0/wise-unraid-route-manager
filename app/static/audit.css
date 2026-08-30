@@ -1,0 +1,6 @@
+.audit-button{margin-left:auto;background:#203743;color:var(--cyan)}
+.audit-status{padding:12px;border-radius:7px;background:#142630}
+.audit-status.healthy{border-left:3px solid var(--cyan)}
+.audit-status.drifted,.audit-status.incomplete{border-left:3px solid var(--amber)}
+.audit-status.broken,.audit-status.conflict{border-left:3px solid var(--red)}
+#findings article{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #253945}

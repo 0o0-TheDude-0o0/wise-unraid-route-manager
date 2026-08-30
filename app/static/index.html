@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wise Route Manager</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/audit.css">
+</head>
+<body>
+  <header>
+    <div><span class="eyebrow">WISE COMPOUND</span><h1>Route Manager</h1></div>
+    <span id="health" class="status">Development build</span>
+  </header>
+  <main>
+    <section class="panel intro">
+      <div><h2>One route, every path.</h2><p>Preview coordinated DNS, LAN proxy, and Pangolin changes before anything is applied.</p></div>
+      <label>API token<input id="token" type="password" autocomplete="off" placeholder="Paste token from /config/api-token"></label>
+    </section>
+    <section class="panel">
+      <h2>Unraid service discovery</h2><p class="muted">Uses a read-only Unraid API key. Docker socket access is not required.</p>
+      <form id="unraid-form"><div class="grid"><label>Unraid URL<input name="base_url" required placeholder="http://192.168.1.10"></label><label>Read-only API key<input name="api_key" type="password" required autocomplete="off"></label><label class="check"><input name="save" type="checkbox" checked> Save encrypted</label></div><button type="submit">Connect</button> <button type="button" id="discover-containers">Discover containers</button></form>
+      <div id="containers" class="muted">Connect Unraid to discover services.</div>
+    </section>
+    <section class="panel">
+      <h2>DNS integration</h2><p class="muted">Test credentials in memory or save them in the authenticated encrypted store.</p>
+      <form id="integration-form"><div class="grid">
+        <label>Integration name<input name="name" placeholder="Home DNS"></label>
+        <label>Provider<select name="provider"><option value="technitium">Technitium DNS</option><option value="pihole">Pi-hole v6</option><option value="adguard">AdGuard Home</option></select></label>
+        <label>Local URL<input name="base_url" required placeholder="http://192.168.1.2:5380"></label>
+        <label>Username (AdGuard only)<input name="username" autocomplete="username"></label>
+        <label>API token or application password<input name="credential" type="password" required autocomplete="off"></label>
+        <label class="check"><input name="verify_tls" type="checkbox" checked> Verify TLS certificate</label>
+        <label class="check"><input name="save" type="checkbox"> Save encrypted after successful test</label>
+      </div><button type="submit">Test connection</button><span id="integration-result"></span></form>
+      <div id="integrations" class="muted">Authenticate to load saved integrations.</div>
+      <div id="dns-discovery" class="muted"></div>
+    </section>
+    <section class="panel"><h2>Pangolin site discovery</h2><p class="muted">Uses an organization-scoped Integration API key.</p><form id="pangolin-form"><div class="grid"><label>API endpoint<input name="endpoint" required placeholder="https://api.example.com"></label><label>Organization ID<input name="organization_id" required placeholder="home-lab"></label><label>Organization API key<input name="api_key" type="password" required autocomplete="off"></label><label class="check"><input name="save" type="checkbox" checked> Save encrypted</label></div><button type="submit">Connect and discover</button> <button id="refresh-sites" type="button">Refresh sites</button></form><div id="pangolin-sites" class="muted">Connect Pangolin to discover sites.</div></section>
+    <section class="panel">
+      <form id="route-form">
+        <input name="source_container_id" type="hidden"><input name="source_container_name" type="hidden"><input name="source_port" type="hidden">
+        <div class="grid">
+          <label>Name<input name="name" required placeholder="Unraid"></label>
+          <label>Hostname<input name="hostname" required placeholder="unraid.example.com"></label>
+          <label>Access mode<select name="mode"><option value="lan_remote">LAN + remote</option><option value="lan">LAN only</option><option value="remote">Remote only</option></select></label>
+          <label>LAN proxy address<input name="lan_address" placeholder="192.168.1.20"></label>
+          <label>DNS integration<select name="dns_integration_id" id="route-dns-integration"><option value="">Choose saved DNS</option></select></label>
+          <label>Upstream protocol<select name="scheme"><option>https</option><option>http</option></select></label>
+          <label>Upstream host<input name="upstream_host" required placeholder="192.168.1.10"></label>
+          <label>Upstream port<input name="upstream_port" required type="number" min="1" max="65535" placeholder="11443"></label>
+          <label>Pangolin site ID<input name="pangolin_site_id" type="number" min="1"></label>
+          <label>Pangolin domain ID<input name="pangolin_domain_id" type="number" min="1"></label>
+        </div>
+        <label class="check"><input name="require_authentication" type="checkbox" checked> Require Pangolin authentication</label>
+        <button type="submit">Preview route</button>
+      </form>
+    </section>
+    <section id="preview" class="panel hidden" aria-live="polite">
+      <h2>Approval preview</h2><div id="steps"></div>
+      <p class="notice">Applying currently saves desired state only. Provider mutations remain disabled until their adapters pass the release gates.</p>
+      <button id="apply" class="danger">Approve and save desired state</button>
+    </section>
+    <section class="panel"><h2>Managed routes</h2><p class="muted">Audits are read-only. Corrections are previewed separately.</p><div id="routes" class="muted">Authenticate to load routes.</div></section>
+    <section id="audit" class="panel hidden"><h2>Route audit</h2><div id="audit-summary"></div><div id="findings"></div></section>
+    <p id="message" role="status"></p>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

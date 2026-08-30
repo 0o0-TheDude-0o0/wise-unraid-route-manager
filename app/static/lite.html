@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wise Route Manager Lite</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/audit.css">
+</head>
+<body>
+  <header><div><span class="eyebrow">WISE COMPOUND</span><h1>Route Manager Lite</h1></div><span id="health" class="status">Route-only edition</span></header>
+  <main>
+    <section class="panel intro"><div><h2>Routes without the clutter.</h2><p>Inspect, correct, and create routes across Technitium, your Unraid LAN proxy, and the Pangolin edge on your VPS.</p></div><label>API token<input id="token" type="password" autocomplete="off" placeholder="Paste token from /config/api-token"></label></section>
+
+    <section class="panel topology">
+      <h2>Default network topology</h2>
+      <div class="topology-grid"><div><strong>VPS edge</strong><span>Pangolin + its installed reverse proxy</span></div><div><strong>Unraid site</strong><span>Newt connector + LAN reverse proxy</span></div><div><strong>Remote access</strong><span>Internet → Pangolin edge → Newt → local service</span></div><div><strong>LAN access</strong><span>Technitium → LAN proxy → local service</span></div></div>
+      <p class="muted">The VPS reverse proxy is considered part of Pangolin and is audited through Pangolin. Route Manager will not rewrite Pangolin-owned proxy configuration independently.</p>
+    </section>
+
+    <section class="panel">
+      <h2>1. Find the Unraid LAN proxy</h2>
+      <p class="muted">Read-only discovery checks Unraid for Newt and an existing LAN proxy. A detected proxy is preserved; bundled Caddy is the fallback.</p>
+      <form id="unraid-form"><div class="grid"><label>Unraid URL<input name="base_url" required placeholder="http://192.168.1.10"></label><label>Read-only API key<input name="api_key" type="password" required autocomplete="off"></label><label class="check"><input name="save" type="checkbox" checked> Save encrypted</label></div><button type="submit">Connect and inspect</button> <button type="button" id="inspect-proxies">Inspect again</button></form>
+      <div id="proxies" class="muted">Connect Unraid to inspect its containers.</div>
+      <form id="npm-form"><h3>Connect Nginx Proxy Manager</h3><div class="grid"><label>Local management URL<input name="base_url" required placeholder="http://192.168.1.10:81"></label><label>API bearer token<input name="api_token" type="password" required autocomplete="off"></label><label class="check"><input name="verify_tls" type="checkbox" checked> Verify TLS</label></div><button type="submit">Connect read-only</button></form>
+    </section>
+
+    <section class="panel">
+      <h2>2. Connect route services</h2>
+      <div class="grid">
+        <form id="technitium-form"><h3>Technitium</h3><label>Local URL<input name="base_url" required placeholder="http://192.168.1.2:5380"></label><label>API token<input name="credential" type="password" required autocomplete="off"></label><label class="check"><input name="verify_tls" type="checkbox" checked> Verify TLS</label><button type="submit">Test and save</button></form>
+        <form id="pangolin-form"><h3>Pangolin</h3><label>API endpoint<input name="endpoint" required placeholder="https://pangolin.example.com/api"></label><label>Organization ID<input name="organization_id" required></label><label>Organization API key<input name="api_key" type="password" required autocomplete="off"></label><button type="submit">Connect and save</button></form>
+      </div>
+      <div id="connections" class="muted">Authenticate to load saved connections.</div>
+      <div id="pangolin-sites" class="muted"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Certificate strategy</h2>
+      <p class="muted">Both options use a trusted DNS-01 wildcard. Choose separate LAN keys or pull the Pangolin wildcard through Newt.</p>
+      <form id="certificate-form"><div class="grid">
+        <label>Strategy<select name="mode"><option value="independent_dns01">Independent LAN certificate (safer default)</option><option value="pangolin_newt_sync">Synchronize Pangolin certificate through Newt</option></select></label>
+        <label>Private certificate endpoint<input name="endpoint" placeholder="https://cert-sync.internal/v1/certificate"></label>
+        <label>Expected certificate name<input name="expected_name" placeholder="*.example.com"></label>
+        <label>Scoped pull token<input name="credential" type="password" autocomplete="off"></label>
+        <label class="check"><input name="auto_renew" type="checkbox"> Automatically install validated renewals after first approval</label>
+      </div><p class="muted">Synchronization is pull-only. It does not grant Route Manager SSH or general VPS filesystem access.</p><button type="submit">Save certificate strategy</button></form>
+      <div id="certificate-status" class="muted">No certificate strategy loaded.</div>
+      <button id="preview-cert-sync" type="button">Preview certificate synchronization</button>
+      <button id="check-cert-renewal" type="button">Check for renewal</button>
+      <div id="certificate-preview" class="hidden"><p class="notice"></p><button id="apply-cert-sync" class="danger" type="button">Approve certificate installation</button></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>3. Existing route inventory</h2><p class="muted">Loads each provider separately and checks whether every discovered hostname resolves.</p></div><button id="scan-inventory" type="button">Load and test everything</button></div>
+      <h3>Combined route map</h3><p class="muted">Matches entries by hostname without merging or changing the underlying provider records.</p><div id="route-map" class="muted">Not scanned.</div>
+      <h3>Pangolin VPS edge routes</h3><p class="muted">Includes the reverse proxy installed with Pangolin as one managed edge stack.</p><div id="pangolin-routes" class="muted">Not scanned.</div>
+      <h3>Technitium records</h3><div id="technitium-routes" class="muted">Not scanned.</div>
+      <h3>Unraid LAN reverse-proxy routes</h3><div id="proxy-routes" class="muted">Not scanned.</div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>4. Port manager</h2><p class="muted">Read-only view of Unraid containers with published services.</p></div><button id="refresh-ports" type="button">Refresh ports</button></div>
+      <div id="port-manager" class="muted">Connect Unraid, then load the inventory.</div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>Managed route health</h2><p class="muted">Deep checks routes already adopted by Wise Route Manager.</p></div><button id="scan-routes" type="button">Deep-check managed routes</button></div>
+      <div id="routes" class="muted">Authenticate to load managed routes.</div>
+    </section>
+
+    <section class="panel">
+      <h2>5. Review, update, or create</h2>
+      <form id="route-form"><div class="grid">
+        <label>Name<input name="name" required placeholder="Open WebUI"></label>
+        <label>Hostname<input name="hostname" required placeholder="chat.example.com"></label>
+        <label>Access<select name="mode"><option value="lan_remote">LAN + remote</option><option value="lan">LAN only</option><option value="remote">Remote only</option></select></label>
+        <label>LAN proxy address<input name="lan_address" placeholder="192.168.1.10"></label>
+        <label>Technitium connection<select name="dns_integration_id" id="route-dns-integration"><option value="">Choose Technitium</option></select></label>
+        <label>Upstream protocol<select name="scheme"><option value="http">http</option><option value="https">https</option></select></label>
+        <label>Upstream host<input name="upstream_host" required placeholder="192.168.1.20"></label>
+        <label>Upstream port<input name="upstream_port" required type="number" min="1" max="65535" placeholder="3000"></label>
+        <label>Pangolin site ID<input name="pangolin_site_id" type="number" min="1"></label>
+        <label>Pangolin domain ID<input name="pangolin_domain_id" type="number" min="1"></label>
+      </div><label class="check"><input name="require_authentication" type="checkbox" checked> Require Pangolin authentication</label><button type="submit">Preview changes</button></form>
+    </section>
+
+    <section id="preview" class="panel hidden" aria-live="polite"><h2>Approval preview</h2><div id="steps"></div><p id="apply-notice" class="notice"></p><button id="apply" class="danger">Approve route changes</button></section>
+    <section id="audit" class="panel hidden"><h2>Route details</h2><div id="audit-summary"></div><div id="findings"></div></section>
+    <p id="message" role="status"></p>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

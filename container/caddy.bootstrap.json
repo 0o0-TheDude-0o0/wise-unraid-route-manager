@@ -1,0 +1,29 @@
+{
+  "admin": {"listen": "unix//run/wise-route-manager/caddy-admin.sock"},
+  "apps": {
+    "tls": {
+      "certificates": {
+        "load_files": [{
+          "certificate": "/config/tls/tls.crt",
+          "key": "/config/tls/tls.key",
+          "tags": ["wise-user-supplied"]
+        }]
+      }
+    },
+    "http": {
+      "servers": {
+        "lan_http": {
+          "listen": [":80"],
+          "routes": [{"handle": [{"handler": "static_response", "status_code": 308, "headers": {"Location": ["https://{http.request.host}{http.request.uri}"]}}]}],
+          "automatic_https": {"disable": true}
+        },
+        "lan": {
+          "listen": [":443"],
+          "routes": [],
+          "tls_connection_policies": [{"certificate_selection": {"any_tag": ["wise-user-supplied"]}}],
+          "automatic_https": {"disable": true}
+        }
+      }
+    }
+  }
+}
