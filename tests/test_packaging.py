@@ -22,6 +22,8 @@ class PackagingTests(unittest.TestCase):
         root=ET.parse(ROOT/"templates"/"wise-route-manager-lite.xml").getroot()
         self.assertIn("read-only",root.findtext("Overview"))
         descriptions={item.attrib["Target"]: item.attrib.get("Description","") for item in root.findall("Config")}
+        self.assertEqual(next(item for item in root.findall("Config") if item.attrib.get("Target")=="/config").attrib.get("Default"),"")
+        self.assertIn("Default appdata storage location",descriptions["/config"])
         self.assertIn("Recommended",descriptions["WISE_ENABLE_PROVIDER_MUTATIONS"])
         self.assertIn("discovered proxies",descriptions["443"])
 
@@ -31,6 +33,7 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("Open Route Manager",page)
         self.assertIn("Preview first",page)
         self.assertIn("navigator.clipboard",page)
+        self.assertIn("DEFAULT_APPDATA",page)
 
     def test_release_assets_are_valid_and_parameterized(self):
         with tempfile.TemporaryDirectory() as directory:
