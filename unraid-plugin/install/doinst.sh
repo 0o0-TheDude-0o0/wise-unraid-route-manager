@@ -15,7 +15,7 @@ default_appdata=""
 docker_dir=""
 for source in /var/local/emhttp/var.ini /boot/config/docker.cfg /boot/config/plugins/dockerMan/docker.cfg; do
   if [ -r "$source" ]; then
-    value=$(grep -oE '(DOCKER_APPDATA|DOCKER_APPDATA_PATH|DOCKER_DEFAULT_APPDATA)[[:space:]]*=[[:space:]]*"?[^"[:space:]]+' "$source" 2>/dev/null | sed -n 's/.*=[[:space:]]*"\{0,1\}//p' | head -n 1)
+    value=$(grep -oE '(DOCKER_APP_CONFIG_PATH|DOCKER_APPDATA|DOCKER_APPDATA_PATH|DOCKER_DEFAULT_APPDATA)[[:space:]]*=[[:space:]]*"?[^"[:space:]]+' "$source" 2>/dev/null | sed -n 's/.*=[[:space:]]*"\{0,1\}//p' | head -n 1)
     if [ -n "$value" ]; then
       default_appdata=$value
       break
