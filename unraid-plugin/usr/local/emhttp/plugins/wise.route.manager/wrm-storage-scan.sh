@@ -29,6 +29,7 @@ emit_config_value() {
   fi
 } | grep -oE '/mnt/[^"[:space:]]*/appdata([^"[:space:]]*)?' | sed 's#\(/appdata\)/.*#\1/#; s#/$#/#' | sort | uniq -c | while read -r references root; do
   [ -n "$root" ] || continue
+  root=${root%/}/
   mode="Read/Write"
   kind="Unraid user share"
   case "$root" in
@@ -41,6 +42,8 @@ emit_config_value() {
       ;;
   esac
   source=$(findmnt -T "$root" -no SOURCE 2>/dev/null || true)
+  # findmnt may append a subvolume or bind-mount selector in brackets.
+  source=${source%%[*}
   filesystem=$(findmnt -T "$root" -no FSTYPE 2>/dev/null || true)
   drive="unknown drive"
   rota=$(lsblk -ndo ROTA "$source" 2>/dev/null || true)
