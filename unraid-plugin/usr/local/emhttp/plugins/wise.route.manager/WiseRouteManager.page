@@ -6,6 +6,8 @@ Icon="route"
 $config = @parse_ini_file('/boot/config/plugins/wise.route.manager/wise.route.manager.cfg') ?: [];
 $candidateUrl = trim($config['APP_URL'] ?? '');
 $defaultAppdata = trim($config['DEFAULT_APPDATA'] ?? '');
+$appdataMode = trim($config['APPDATA_MOUNT_MODE'] ?? '');
+$appdataDriveType = trim($config['APPDATA_DRIVE_TYPE'] ?? '');
 $parts = @parse_url($candidateUrl);
 $scheme = is_array($parts) ? ($parts['scheme'] ?? '') : '';
 $configuredUrl = is_array($parts) && in_array($scheme, ['http', 'https'], true) && !empty($parts['host']) ? $candidateUrl : '';
@@ -66,6 +68,7 @@ $url = htmlspecialchars($configuredUrl, ENT_QUOTES, 'UTF-8');
       <p>The plugin is installed, but it does not have the Route Manager container address yet.</p>
       <ol class="wrm-steps">
         <li>Install <strong>Wise Route Manager</strong> or <strong>Wise Route Manager Lite</strong> from your container templates. Leave the host appdata path blank so Unraid can use its configured default<?= $defaultAppdata !== '' ? ' (<code>' . htmlspecialchars($defaultAppdata, ENT_QUOTES, 'UTF-8') . '</code>)' : '' ?>.</li>
+        <?php if ($appdataMode !== ''): ?><li>Installer check: this is detected as <strong><?= htmlspecialchars($appdataDriveType, ENT_QUOTES, 'UTF-8') ?></strong>; use <strong><?= htmlspecialchars($appdataMode === 'rw,slave' ? 'Read/Write - Slave' : 'Read/Write', ENT_QUOTES, 'UTF-8') ?></strong> for the appdata mapping.</li><?php endif; ?>
         <li>Give it a dedicated, unused <strong>br0</strong> address and keep the management port at <strong>9080</strong>.</li>
         <li>Set <code>APP_URL</code> in <code>/boot/config/plugins/wise.route.manager/wise.route.manager.cfg</code> to that address, for example <code>http://192.168.1.50:9080</code>.</li>
         <li>Reload this page and open the application using the button that appears above.</li>

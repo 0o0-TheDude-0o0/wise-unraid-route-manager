@@ -14,18 +14,30 @@ fi
 default_appdata=""
 for source in /var/local/emhttp/var.ini /boot/config/docker.cfg /boot/config/plugins/dockerMan/docker.cfg; do
   if [ -r "$source" ]; then
-    value=$(sed -n -n 's/^[[:space:]]*DOCKER_APPDATA[[:space:]]*=[[:space:]]*"\{0,1\}\([^"[:space:]]*\)"\{0,1\}.*/\1/p' "$source" | head -n 1)
+    value=$(grep -oE 'DOCKER_APPDATA[[:space:]]*=[[:space:]]*"?[^"[:space:]]+' "$source" 2>/dev/null | sed -n 's/.*=[[:space:]]*"\{0,1\}//p' | head -n 1)
     if [ -n "$value" ]; then
       default_appdata=$value
       break
     fi
   fi
 done
+if [ -z "$default_appdata" ]; then
+  default_appdata=$(grep -hoE '/mnt/(disks|cache|user)/[^"[:space:]]*/appdata/?' /var/local/emhttp/var.ini /boot/config/docker.cfg /boot/config/plugins/dockerMan/docker.cfg 2>/dev/null | head -n 1 || true)
+fi
 if [ -n "$default_appdata" ]; then
+  default_appdata=${default_appdata%/}/
+  appdata_mode="rw"
+  drive_type="Unraid user share"
+  case "$default_appdata" in
+    /mnt/disks/*)
+      appdata_mode="rw,slave"
+      device=$(findmnt -T "$default_appdata" -no SOURCE 2>/dev/null || true)
+      rota=$(lsblk -ndo ROTA "$device" 2>/dev/null || true)
+      if [ "$rota" = "0" ]; then drive_type="unassigned SSD"; else drive_type="unassigned drive"; fi
+      ;;
+    /mnt/cache/*) drive_type="cache/pool path" ;;
+  esac
   umask 077
-  if grep -q '^DEFAULT_APPDATA=' "$config_dir/wise.route.manager.cfg" 2>/dev/null; then
-    sed -i "s|^DEFAULT_APPDATA=.*|DEFAULT_APPDATA=\"$default_appdata\"|" "$config_dir/wise.route.manager.cfg"
-  else
-    printf 'DEFAULT_APPDATA="%s"\n' "$default_appdata" >> "$config_dir/wise.route.manager.cfg"
-  fi
+  for setting in DEFAULT_APPDATA APPDATA_MOUNT_MODE APPDATA_DRIVE_TYPE; do sed -i "/^${setting}=/d" "$config_dir/wise.route.manager.cfg"; done
+  printf 'DEFAULT_APPDATA="%s"\nAPPDATA_MOUNT_MODE="%s"\nAPPDATA_DRIVE_TYPE="%s"\n' "$default_appdata" "$appdata_mode" "$drive_type" >> "$config_dir/wise.route.manager.cfg"
 fi
