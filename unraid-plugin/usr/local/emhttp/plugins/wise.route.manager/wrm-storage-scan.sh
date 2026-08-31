@@ -50,7 +50,9 @@ drive_type_for_source() {
 } | grep -oE '/mnt/[^"[:space:]]*/appdata([^"[:space:]]*)?' | awk '
   {
     original=$0
+    gsub(/[`.,;:)\]}]+$/, "", original)
     root=$0
+    gsub(/[`.,;:)\]}]+$/, "", root)
     sub(/\/appdata\/.*/, "/appdata/", root)
     sub(/\/?$/, "/", root)
     references[root]++
