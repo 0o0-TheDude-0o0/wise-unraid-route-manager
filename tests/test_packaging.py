@@ -70,6 +70,11 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("--ip",installer)
         self.assertIn("WISE_ENABLE_PROVIDER_MUTATIONS=0",installer)
         self.assertIn("ghcr.io/0o0-thedude-0o0/wise-unraid-route-manager:latest",installer)
+        self.assertIn("docker rm -f",installer)
+        entrypoint=(ROOT/"container/entrypoint.sh").read_text()
+        self.assertIn('WISE_EDITION:-full',entrypoint)
+        self.assertIn('starting web admin only on port 9080',entrypoint)
+        self.assertIn('caddy_pid=',entrypoint)
 
     def test_release_assets_are_valid_and_parameterized(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -33,22 +33,22 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
+docker pull "$image"
 if docker inspect "$name" >/dev/null 2>&1; then
-  docker start "$name" >/dev/null 2>&1 || true
-else
-  docker pull "$image"
-  docker run -d \
-    --name "$name" \
-    --restart unless-stopped \
-    --network br0 \
-    --ip "$ip_address" \
-    -v "$host_path:/config:$mount_mode" \
-    -e WISE_EDITION=lite \
-    -e WISE_MASTER_KEY_FILE=/config/master.key \
-    -e WISE_ENABLE_PROVIDER_MUTATIONS=0 \
-    -e WISE_CERT_RENEWAL_INTERVAL_SECONDS=21600 \
-    "$image" >/dev/null
+  echo "Updating existing $name container while preserving appdata at $host_path."
+  docker rm -f "$name" >/dev/null
 fi
+docker run -d \
+  --name "$name" \
+  --restart unless-stopped \
+  --network br0 \
+  --ip "$ip_address" \
+  -v "$host_path:/config:$mount_mode" \
+  -e WISE_EDITION=lite \
+  -e WISE_MASTER_KEY_FILE=/config/master.key \
+  -e WISE_ENABLE_PROVIDER_MUTATIONS=0 \
+  -e WISE_CERT_RENEWAL_INTERVAL_SECONDS=21600 \
+  "$image" >/dev/null
 
 tmp=$(mktemp)
 grep -v '^APP_URL=' "$cfg" 2>/dev/null > "$tmp" || true
