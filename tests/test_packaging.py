@@ -29,7 +29,7 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("discovered proxies",descriptions["443"])
 
     def test_unraid_page_has_ready_and_setup_guidance(self):
-        page=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/WiseRouteManager.page").read_text()
+        page=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/WiseRouteManagerSetup.page").read_text()
         self.assertIn("Create the Lite container",page)
         self.assertIn("Open Route Manager",page)
         self.assertIn("Preview first",page)
@@ -37,7 +37,6 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("DEFAULT_APPDATA",page)
         self.assertIn("APPDATA_MOUNT_MODE",page)
         self.assertIn("Detected appdata storage",page)
-        self.assertIn('Type="xmenu"',page)
         self.assertIn("wrm-ref-details",page)
         self.assertIn("wrm-ref-row",page)
         self.assertIn('colspan="4"',page)
@@ -52,6 +51,11 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("containerRunning",page)
         self.assertIn("wrm-path-choice",page)
         self.assertIn("Custom path",page)
+        launcher=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/WiseRouteManager.page").read_text()
+        self.assertIn('Type="xmenu"',launcher)
+        self.assertIn('Tabs="true"',launcher)
+        self.assertNotIn("Create the Lite container",launcher)
+        self.assertIn("WiseRouteManagerSetup",launcher)
         self.assertIn("wrm-ip-suggest.sh",page)
         self.assertIn("APP_URL",page)
         scan=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/wrm-storage-scan.sh").read_text()
