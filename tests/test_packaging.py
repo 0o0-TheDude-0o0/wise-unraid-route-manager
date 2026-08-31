@@ -75,6 +75,10 @@ class PackagingTests(unittest.TestCase):
         self.assertIn('WISE_EDITION:-full',entrypoint)
         self.assertIn('starting web admin only on port 9080',entrypoint)
         self.assertIn('caddy_pid=',entrypoint)
+        readme=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/README.md").read_text()
+        self.assertIn("<strong>Wise Route Manager</strong>",readme)
+        self.assertNotIn("Thin Unraid integration",readme)
+        self.assertNotIn("# ",readme)
 
     def test_release_assets_are_valid_and_parameterized(self):
         with tempfile.TemporaryDirectory() as directory:
