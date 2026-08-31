@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<PLUGIN name="wise.route.manager" author="Wise Route Manager" version="@VERSION@" launch="Tools/WiseRouteManager" pluginURL="https://github.com/@OWNER@/@REPOSITORY@/releases/latest/download/wise.route.manager.plg" min="7.2.0" support="https://github.com/@OWNER@/@REPOSITORY@/issues" icon="route">
+<PLUGIN name="wise.route.manager" author="Wise Route Manager" version="@VERSION@" launch="Tools/WiseRouteManager" pluginURL="@PLUGIN_URL@" min="7.2.0" support="https://github.com/@OWNER@/@REPOSITORY@/issues" icon="route">
   <CHANGES>### @VERSION@
 - Versioned thin Unraid webGUI integration for the Route Manager container.
   </CHANGES>

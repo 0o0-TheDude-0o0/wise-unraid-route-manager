@@ -12,10 +12,14 @@ case "$owner/$repository" in *[!0-9A-Za-z._/-]*|/*|*/|*//* ) echo "invalid GitHu
 mkdir -p "$output"
 package_version=$(printf '%s\n' "$version" | tr '-' '_')
 package="$output/wise.route.manager-$package_version-noarch-1.txz"
+case "$version" in
+  *-*) plugin_url="https://github.com/$owner/$repository/releases/download/v$version/wise.route.manager.plg" ;;
+  *) plugin_url="https://github.com/$owner/$repository/releases/latest/download/wise.route.manager.plg" ;;
+esac
 tar --xz --create --file "$package" --owner=0 --group=0 --numeric-owner -C unraid-plugin .
 md5=$(md5sum "$package" | awk '{print $1}')
 
-sed -e "s|@VERSION@|$version|g" -e "s|@PACKAGE_VERSION@|$package_version|g" -e "s|@OWNER@|$owner|g" -e "s|@REPOSITORY@|$repository|g" -e "s|@MD5@|$md5|g" \
+sed -e "s|@VERSION@|$version|g" -e "s|@PACKAGE_VERSION@|$package_version|g" -e "s|@PLUGIN_URL@|$plugin_url|g" -e "s|@OWNER@|$owner|g" -e "s|@REPOSITORY@|$repository|g" -e "s|@MD5@|$md5|g" \
   packaging/wise.route.manager.plg.in > "$output/wise.route.manager.plg"
 sed -e "s|OWNER|$owner|g" templates/wise-route-manager.xml > "$output/wise-route-manager.xml"
 sed -e "s|OWNER|$owner|g" templates/wise-route-manager-lite.xml > "$output/wise-route-manager-lite.xml"

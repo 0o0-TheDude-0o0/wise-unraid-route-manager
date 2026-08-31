@@ -50,8 +50,8 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("storage_probe_path",scan)
         self.assertIn("device=${device%%[*}",scan)
         self.assertIn("drive=\"User share\"",scan)
-        self.assertIn("drive=\"Cache/pool\"",scan)
-        self.assertIn("filesystem=\"pool path\"",scan)
+        self.assertIn("drive=\"Pool/share managed\"",scan)
+        self.assertIn("filesystem=\"Pool/share managed\"",scan)
         installer=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/wrm-container-install.sh").read_text()
         self.assertIn("docker run -d",installer)
         self.assertIn("--network br0",installer)
@@ -65,6 +65,7 @@ class PackagingTests(unittest.TestCase):
             output=Path(directory); plugin=ET.parse(output/"wise.route.manager.plg").getroot(); template=ET.parse(output/"wise-route-manager.xml").getroot(); lite=ET.parse(output/"wise-route-manager-lite.xml").getroot()
             self.assertEqual(plugin.attrib["version"],"0.1.0-beta11")
             self.assertIn("example/wise-route-manager",plugin.attrib["pluginURL"])
+            self.assertIn("/releases/download/v0.1.0-beta11/wise.route.manager.plg",plugin.attrib["pluginURL"])
             self.assertTrue((output/"wise.route.manager-0.1.0_beta11-noarch-1.txz").exists())
             package_url=plugin.find("FILE/URL").text
             self.assertIn("wise.route.manager-0.1.0_beta11-noarch-1.txz",package_url)

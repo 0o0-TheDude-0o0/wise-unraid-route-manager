@@ -73,8 +73,8 @@ drive_type_for_source() {
       [ -n "$filesystem" ] || filesystem="fuse.shfs"
       ;;
     /mnt/cache/*)
-      [ "$drive" = "No single device" ] && drive="Cache/pool"
-      [ -n "$filesystem" ] || filesystem="pool path"
+      [ "$drive" = "No single device" ] && drive="Pool/share managed"
+      [ -n "$filesystem" ] || filesystem="Pool/share managed"
       ;;
   esac
   configured="no"
