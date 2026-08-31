@@ -30,19 +30,31 @@ class PackagingTests(unittest.TestCase):
 
     def test_unraid_page_has_ready_and_setup_guidance(self):
         page=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/WiseRouteManager.page").read_text()
-        self.assertIn("Finish the connection",page)
+        self.assertIn("Create the Lite container",page)
         self.assertIn("Open Route Manager",page)
         self.assertIn("Preview first",page)
         self.assertIn("navigator.clipboard",page)
         self.assertIn("DEFAULT_APPDATA",page)
         self.assertIn("APPDATA_MOUNT_MODE",page)
         self.assertIn("Detected appdata storage",page)
+        self.assertIn("wrm-container-install.sh",page)
+        self.assertIn("Create and start container",page)
+        self.assertIn("wrm-ip-suggest.sh",page)
+        self.assertIn("APP_URL",page)
         scan=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/wrm-storage-scan.sh").read_text()
+        installer_doinst=(ROOT/"unraid-plugin/install/doinst.sh").read_text()
+        self.assertIn("chmod 0755 /usr/local/emhttp/plugins/wise.route.manager/wrm-*.sh",installer_doinst)
         self.assertIn("DOCKER_APP_CONFIG_PATH",scan)
         self.assertIn("Read/Write - Slave",scan)
         self.assertIn("docker inspect",scan)
         self.assertIn("storage_probe_path",scan)
         self.assertIn("device=${device%%[*}",scan)
+        installer=(ROOT/"unraid-plugin/usr/local/emhttp/plugins/wise.route.manager/wrm-container-install.sh").read_text()
+        self.assertIn("docker run -d",installer)
+        self.assertIn("--network br0",installer)
+        self.assertIn("--ip",installer)
+        self.assertIn("WISE_ENABLE_PROVIDER_MUTATIONS=0",installer)
+        self.assertIn("ghcr.io/0o0-thedude-0o0/wise-unraid-route-manager:latest",installer)
 
     def test_release_assets_are_valid_and_parameterized(self):
         with tempfile.TemporaryDirectory() as directory:

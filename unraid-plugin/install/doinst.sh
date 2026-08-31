@@ -3,6 +3,7 @@ set -eu
 
 config_dir=/boot/config/plugins/wise.route.manager
 mkdir -p "$config_dir"
+chmod 0755 /usr/local/emhttp/plugins/wise.route.manager/wrm-*.sh 2>/dev/null || true
 if [ ! -f "$config_dir/wise.route.manager.cfg" ]; then
   printf '%s\n' 'APP_URL=""' > "$config_dir/wise.route.manager.cfg"
   chmod 0600 "$config_dir/wise.route.manager.cfg"
