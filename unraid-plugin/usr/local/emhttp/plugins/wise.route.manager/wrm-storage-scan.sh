@@ -64,9 +64,19 @@ drive_type_for_source() {
   probe=$(storage_probe_path "$root")
   source=$(findmnt -T "$root" -no SOURCE 2>/dev/null || findmnt -T "$probe" -no SOURCE 2>/dev/null || true)
   filesystem=$(findmnt -T "$root" -no FSTYPE 2>/dev/null || findmnt -T "$probe" -no FSTYPE 2>/dev/null || true)
-  drive="unknown drive"
+  drive="No single device"
   resolved_drive=$(drive_type_for_source "$source")
   [ -n "$resolved_drive" ] && drive=$resolved_drive
+  case "$root" in
+    /mnt/user/*)
+      drive="User share"
+      [ -n "$filesystem" ] || filesystem="fuse.shfs"
+      ;;
+    /mnt/cache/*)
+      [ "$drive" = "No single device" ] && drive="Cache/pool"
+      [ -n "$filesystem" ] || filesystem="pool path"
+      ;;
+  esac
   configured="no"
   configured_path=$(emit_config_value DOCKER_APP_CONFIG_PATH | head -n 1 || true)
   case "${configured_path%/}/" in "$root") configured="yes" ;; esac
