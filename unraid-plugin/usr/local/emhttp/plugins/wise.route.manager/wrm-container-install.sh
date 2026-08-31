@@ -43,6 +43,9 @@ fi
 docker run -d \
   --name "$name" \
   --restart unless-stopped \
+  --label net.unraid.docker.managed=dockerman \
+  --label net.unraid.docker.webui='http://[IP]:[PORT:9080]/' \
+  --label net.unraid.docker.icon='https://raw.githubusercontent.com/0o0-TheDude-0o0/wise-unraid-route-manager/main/docs/wise-route-manager-icon.svg' \
   --network br0 \
   --ip "$ip_address" \
   -v "$host_path:/config:$mount_mode" \
