@@ -2,6 +2,6 @@ Menu="Tools:90"
 Title="Wise Route Manager"
 Type="xmenu"
 Tabs="true"
-Icon="route"
+Icon="refresh"
 ---
 <div style="padding: 20px; color: #9fb1c1;">Open the <a href="/Tools/WiseRouteManagerSetup">Wise Route Manager</a> tab to configure and launch the application.</div>

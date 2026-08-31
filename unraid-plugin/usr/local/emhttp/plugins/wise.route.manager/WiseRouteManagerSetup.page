@@ -1,6 +1,6 @@
 Menu="Wise Route Manager"
 Title="Wise Route Manager"
-Icon="route"
+Icon="refresh"
 ---
 <?php
 $config = @parse_ini_file('/boot/config/plugins/wise.route.manager/wise.route.manager.cfg') ?: [];
