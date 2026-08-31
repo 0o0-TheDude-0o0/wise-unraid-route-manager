@@ -44,6 +44,19 @@ $suggestedIp = trim((string) @shell_exec('/usr/local/emhttp/plugins/wise.route.m
 if ($suggestedIp === '') {
     $suggestedIp = '192.168.1.40';
 }
+$containerStatus = trim((string) @shell_exec("docker inspect -f '{{.State.Status}}' wise-route-manager-lite 2>/dev/null"));
+$containerExists = $containerStatus !== '';
+$containerRunning = $containerStatus === 'running';
+$storageChoices = [];
+foreach ($storageScan as $storage) {
+    $choice = rtrim($storage['path'], '/') . '/wise-route-manager-lite';
+    if (!in_array($choice, $storageChoices, true)) {
+        $storageChoices[] = $choice;
+    }
+}
+if (!$storageChoices && $suggestedHostPath !== '') {
+    $storageChoices[] = $suggestedHostPath;
+}
 
 function wrm_count_label($count, $singular, $plural) {
     $number = (int) $count;
@@ -78,6 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['wrm_action'] ?? '') === 'c
     }
 }
 
+$containerStatus = trim((string) @shell_exec("docker inspect -f '{{.State.Status}}' wise-route-manager-lite 2>/dev/null"));
+$containerExists = $containerStatus !== '';
+$containerRunning = $containerStatus === 'running';
 $parts = @parse_url($candidateUrl);
 $scheme = is_array($parts) ? ($parts['scheme'] ?? '') : '';
 $configuredUrl = is_array($parts) && in_array($scheme, ['http', 'https'], true) && !empty($parts['host']) ? $candidateUrl : '';
@@ -113,6 +129,7 @@ $url = htmlspecialchars($configuredUrl, ENT_QUOTES, 'UTF-8');
   .wrm-form { display: grid; gap: 14px; margin-top: 14px; }
   .wrm-field label { display: block; margin-bottom: 5px; color: #e6f2ff; font-size: 12px; font-weight: 700; }
   .wrm-field input, .wrm-field select { width: 100%; max-width: 620px; padding: 8px 9px; border: 1px solid #41586c; border-radius: 5px; background: #0b141d; color: #e6f2ff; }
+  .wrm-field select.wrm-path-choice { margin-bottom: 8px; }
   .wrm-field small { display: block; max-width: 760px; margin-top: 5px; color: #9fb1c1; font-size: 12px; line-height: 1.45; }
   .wrm-storage-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
   .wrm-storage-table th, .wrm-storage-table td { padding: 9px 8px; border-bottom: 1px solid #2d4052; text-align: left; vertical-align: top; }
@@ -144,7 +161,7 @@ $url = htmlspecialchars($configuredUrl, ENT_QUOTES, 'UTF-8');
   <?php if ($installMessage !== ''): ?><section class="wrm-panel"><div class="wrm-success"><?= htmlspecialchars($installMessage, ENT_QUOTES, 'UTF-8') ?></div></section><?php endif; ?>
   <?php if ($installError !== ''): ?><section class="wrm-panel"><div class="wrm-error"><?= htmlspecialchars($installError, ENT_QUOTES, 'UTF-8') ?></div></section><?php endif; ?>
 
-  <?php if ($configuredUrl !== ''): ?>
+  <?php if ($configuredUrl !== '' && $containerRunning): ?>
     <section class="wrm-panel">
       <h2>Your Route Manager is ready</h2>
       <p>The application endpoint saved for this Unraid host is:</p>
@@ -157,14 +174,22 @@ $url = htmlspecialchars($configuredUrl, ENT_QUOTES, 'UTF-8');
     </section>
   <?php else: ?>
     <section class="wrm-panel">
-      <h2>Create the Lite container</h2>
-      <p>The plugin is installed and ready to create the Route Manager Lite container. Review the detected storage and suggested IP, then let the plugin create/start Docker for you.</p>
+      <h2><?= $containerExists ? 'Container needs attention' : 'Create the Lite container' ?></h2>
+      <p><?= $containerExists ? 'Unraid reports the existing container as ' . htmlspecialchars($containerStatus, ENT_QUOTES, 'UTF-8') . '. Choose the storage and IP below, then recreate/start it. Existing appdata is preserved.' : 'The plugin is installed and ready to create the Route Manager Lite container. Choose the detected storage and suggested IP, then let the plugin create/start Docker for you.' ?></p>
       <form class="wrm-form" method="post" onsubmit="return confirm('Create and start the Wise Route Manager Lite container with these settings?');">
         <input type="hidden" name="wrm_action" value="create_container">
         <div class="wrm-field">
           <label for="wrm-host-path">Appdata path</label>
+          <?php if ($storageChoices): ?>
+            <select id="wrm-path-choice" class="wrm-path-choice" aria-label="Detected appdata path choices">
+              <?php foreach ($storageChoices as $choice): ?>
+                <option value="<?= htmlspecialchars($choice, ENT_QUOTES, 'UTF-8') ?>"<?= $choice === $suggestedHostPath ? ' selected' : '' ?>>Use <?= htmlspecialchars($choice, ENT_QUOTES, 'UTF-8') ?></option>
+              <?php endforeach; ?>
+              <option value="__custom__">Custom path…</option>
+            </select>
+          <?php endif; ?>
           <input id="wrm-host-path" name="host_path" type="text" value="<?= htmlspecialchars($suggestedHostPath, ENT_QUOTES, 'UTF-8') ?>" required>
-          <small>Defaulted from Unraid Docker settings when available. For clean recreates, keep this dedicated folder and do not delete it unless you want to remove Route Manager data.</small>
+          <small>Select a detected location above or enter your own dedicated folder under <code>/mnt</code>. The Unraid Docker default is preselected when available. For clean recreates, keep this folder and do not delete it unless you want to remove Route Manager data.</small>
         </div>
         <div class="wrm-field">
           <label for="wrm-mount-mode">Appdata access</label>
@@ -261,6 +286,19 @@ $url = htmlspecialchars($configuredUrl, ENT_QUOTES, 'UTF-8');
     } else {
       status.textContent = 'Copy unavailable; select the address above.';
     }
+  });
+}());
+</script>
+<?php endif; ?>
+<?php if (!empty($storageChoices)): ?>
+<script>
+(function () {
+  var choice = document.getElementById('wrm-path-choice');
+  var input = document.getElementById('wrm-host-path');
+  if (!choice || !input) return;
+  choice.addEventListener('change', function () {
+    if (choice.value !== '__custom__') input.value = choice.value;
+    if (choice.value === '__custom__') { input.value = ''; input.focus(); }
   });
 }());
 </script>
