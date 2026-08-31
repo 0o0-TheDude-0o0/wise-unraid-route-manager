@@ -9,6 +9,8 @@ cfg="$config_dir/wise.route.manager.cfg"
 host_path=${1:?host appdata path is required}
 ip_address=${2:?container IP address is required}
 mount_mode=${3:-rw}
+template_dir=/boot/config/plugins/dockerMan/templates-user
+template_path="$template_dir/my-wise-route-manager-lite.xml"
 
 case "$host_path" in
   /mnt/*) ;;
@@ -49,6 +51,35 @@ docker run -d \
   -e WISE_ENABLE_PROVIDER_MUTATIONS=0 \
   -e WISE_CERT_RENEWAL_INTERVAL_SECONDS=21600 \
   "$image" >/dev/null
+
+# Give DockerMan an editable, first-party-style template for future changes.
+# Do not overwrite it after the first creation: users may intentionally edit it.
+if [ ! -f "$template_path" ]; then
+  mkdir -p "$template_dir"
+  cat > "$template_path" <<EOF
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Wise Route Manager Lite</Name>
+  <Repository>$image</Repository>
+  <Registry>https://github.com/0o0-TheDude-0o0/wise-unraid-route-manager/pkgs/container/wise-unraid-route-manager</Registry>
+  <Network>br0</Network>
+  <MyIP>$ip_address</MyIP>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/0o0-TheDude-0o0/wise-unraid-route-manager/issues</Support>
+  <Project>https://github.com/0o0-TheDude-0o0/wise-unraid-route-manager</Project>
+  <Overview>Wise Route Manager Lite provides a safe, read-only-first workspace for discovering, auditing, and reviewing LAN route changes.</Overview>
+  <Category>Network:Other</Category>
+  <WebUI>http://[IP]:[PORT:9080]/</WebUI>
+  <Config Name="Appdata" Target="/config" Default="$host_path" Mode="$mount_mode" Description="Wise Route Manager Lite data. Keep Read/Write - Slave when this path is on an unassigned SSD." Type="Path" Display="always" Required="true" Mask="false" />
+  <Config Name="Edition" Target="WISE_EDITION" Default="lite" Description="Keep lite for the Lite edition." Type="Variable" Display="advanced" Required="true" Mask="false" />
+  <Config Name="Master key path" Target="WISE_MASTER_KEY_FILE" Default="/config/master.key" Description="Keep the encryption key inside the persistent appdata mapping." Type="Variable" Display="advanced" Required="true" Mask="false" />
+  <Config Name="Enable live changes" Target="WISE_ENABLE_PROVIDER_MUTATIONS" Default="0" Description="Keep 0 until discovery and the first preview are verified." Type="Variable" Display="advanced" Required="true" Mask="false" />
+  <Config Name="Management UI" Target="9080" Default="9080" Mode="tcp" Description="Authenticated Route Manager Lite web interface." Type="Port" Display="always" Required="true" Mask="false" />
+</Container>
+EOF
+  chmod 0644 "$template_path" 2>/dev/null || true
+fi
 
 tmp=$(mktemp)
 grep -v '^APP_URL=' "$cfg" 2>/dev/null > "$tmp" || true
