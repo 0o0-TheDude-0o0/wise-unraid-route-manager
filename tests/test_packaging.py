@@ -41,6 +41,8 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("DOCKER_APP_CONFIG_PATH",scan)
         self.assertIn("Read/Write - Slave",scan)
         self.assertIn("docker inspect",scan)
+        self.assertIn("storage_probe_path",scan)
+        self.assertIn("device=${device%%[*}",scan)
 
     def test_release_assets_are_valid_and_parameterized(self):
         with tempfile.TemporaryDirectory() as directory:
