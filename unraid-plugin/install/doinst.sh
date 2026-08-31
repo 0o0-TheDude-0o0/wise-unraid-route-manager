@@ -8,6 +8,26 @@ if [ ! -f "$config_dir/wise.route.manager.cfg" ]; then
   chmod 0600 "$config_dir/wise.route.manager.cfg"
 fi
 
+storage_probe_path() {
+  path=${1%/}
+  case "$path" in
+    /mnt/disks/*/*) printf '/mnt/disks/%s\n' "$(printf '%s\n' "${path#/mnt/disks/}" | cut -d/ -f1)" ;;
+    *) printf '%s\n' "$path" ;;
+  esac
+}
+
+drive_type_for_source() {
+  device=$1
+  device=${device%%[*}
+  [ -n "$device" ] || return 0
+  rota=$(lsblk -ndo ROTA "$device" 2>/dev/null | head -n 1 || true)
+  if [ -z "$rota" ] && [ "${device#/dev/}" != "$device" ]; then
+    parent=$(lsblk -ndo PKNAME "$device" 2>/dev/null | head -n 1 || true)
+    [ -n "$parent" ] && rota=$(lsblk -ndo ROTA "/dev/$parent" 2>/dev/null | head -n 1 || true)
+  fi
+  if [ "$rota" = "0" ]; then printf 'SSD\n'; elif [ "$rota" = "1" ]; then printf 'HDD\n'; fi
+}
+
 # Preserve Unraid's current Docker appdata preference for webGUI guidance.
 # Templates intentionally leave their host path blank so Unraid can apply its
 # own default for each installation.
@@ -42,9 +62,10 @@ if [ -n "$default_appdata" ]; then
   case "$default_appdata" in
     /mnt/disks/*)
       appdata_mode="rw,slave"
-      device=$(findmnt -T "$default_appdata" -no SOURCE 2>/dev/null || true)
-      rota=$(lsblk -ndo ROTA "$device" 2>/dev/null || true)
-      if [ "$rota" = "0" ]; then drive_type="unassigned SSD"; else drive_type="unassigned drive"; fi
+      probe=$(storage_probe_path "$default_appdata")
+      device=$(findmnt -T "$default_appdata" -no SOURCE 2>/dev/null || findmnt -T "$probe" -no SOURCE 2>/dev/null || true)
+      resolved_drive=$(drive_type_for_source "$device")
+      if [ "$resolved_drive" = "SSD" ]; then drive_type="unassigned SSD"; else drive_type="unassigned drive"; fi
       ;;
     /mnt/cache/*) drive_type="cache/pool path" ;;
   esac
