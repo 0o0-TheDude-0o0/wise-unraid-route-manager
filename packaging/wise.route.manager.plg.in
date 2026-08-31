@@ -3,13 +3,13 @@
   <CHANGES>### @VERSION@
 - Versioned thin Unraid webGUI integration for the Route Manager container.
   </CHANGES>
-  <FILE Name="/boot/config/plugins/wise.route.manager/wise.route.manager-@VERSION@-noarch-1.txz" Run="upgradepkg --install-new">
-    <URL>https://github.com/@OWNER@/@REPOSITORY@/releases/download/v@VERSION@/wise.route.manager-@VERSION@-noarch-1.txz</URL>
+  <FILE Name="/boot/config/plugins/wise.route.manager/wise.route.manager-@PACKAGE_VERSION@-noarch-1.txz" Run="upgradepkg --install-new">
+    <URL>https://github.com/@OWNER@/@REPOSITORY@/releases/download/v@VERSION@/wise.route.manager-@PACKAGE_VERSION@-noarch-1.txz</URL>
     <MD5>@MD5@</MD5>
   </FILE>
   <FILE Run="/bin/bash" Method="remove">
     <INLINE><![CDATA[
-removepkg "wise.route.manager-@VERSION@-noarch-1" 2>/dev/null || true
+removepkg "wise.route.manager-@PACKAGE_VERSION@-noarch-1" 2>/dev/null || true
 rm -rf -- /usr/local/emhttp/plugins/wise.route.manager
 echo "Wise Route Manager integration removed. Container and persistent configuration were preserved."
     ]]></INLINE>
