@@ -46,10 +46,13 @@ class PackagingTests(unittest.TestCase):
 
     def test_release_assets_are_valid_and_parameterized(self):
         with tempfile.TemporaryDirectory() as directory:
-            subprocess.run([str(ROOT/"scripts"/"build-release-assets.sh"),"0.1.0","example","wise-route-manager",directory],cwd=ROOT,check=True,capture_output=True,text=True)
+            subprocess.run([str(ROOT/"scripts"/"build-release-assets.sh"),"0.1.0-beta11","example","wise-route-manager",directory],cwd=ROOT,check=True,capture_output=True,text=True)
             output=Path(directory); plugin=ET.parse(output/"wise.route.manager.plg").getroot(); template=ET.parse(output/"wise-route-manager.xml").getroot(); lite=ET.parse(output/"wise-route-manager-lite.xml").getroot()
-            self.assertEqual(plugin.attrib["version"],"0.1.0")
+            self.assertEqual(plugin.attrib["version"],"0.1.0-beta11")
             self.assertIn("example/wise-route-manager",plugin.attrib["pluginURL"])
+            self.assertTrue((output/"wise.route.manager-0.1.0_beta11-noarch-1.txz").exists())
+            package_url=plugin.find("FILE/URL").text
+            self.assertIn("wise.route.manager-0.1.0_beta11-noarch-1.txz",package_url)
             self.assertEqual(template.findtext("Repository"),"ghcr.io/example/wise-unraid-route-manager:latest")
             self.assertEqual(lite.findtext("Name"),"Wise Route Manager Lite")
             self.assertEqual(next(item for item in lite.findall("Config") if item.attrib.get("Target")=="WISE_EDITION").attrib.get("Default"),"lite")
