@@ -47,7 +47,24 @@ drive_type_for_source() {
       docker inspect --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' "$container" 2>/dev/null || true
     done
   fi
-} | grep -oE '/mnt/[^"[:space:]]*/appdata([^"[:space:]]*)?' | sed 's#\(/appdata\)/.*#\1/#; s#/$#/#' | sort | uniq -c | while read -r references root; do
+} | grep -oE '/mnt/[^"[:space:]]*/appdata([^"[:space:]]*)?' | awk '
+  {
+    original=$0
+    root=$0
+    sub(/\/appdata\/.*/, "/appdata/", root)
+    sub(/\/?$/, "/", root)
+    references[root]++
+    path_key=root SUBSEP original
+    if (!seen[path_key]++) {
+      paths[root]=(paths[root] ? paths[root] "|" original : original)
+    }
+  }
+  END {
+    for (root in references) {
+      printf "%s\t%s\t%s\n", references[root], root, paths[root]
+    }
+  }
+' | sort -k2,2 | while IFS="$(printf '\t')" read -r references root found_paths; do
   [ -n "$root" ] || continue
   root=${root%/}/
   mode="Read/Write"
@@ -80,5 +97,5 @@ drive_type_for_source() {
   configured="no"
   configured_path=$(emit_config_value DOCKER_APP_CONFIG_PATH | head -n 1 || true)
   case "${configured_path%/}/" in "$root") configured="yes" ;; esac
-  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$root" "$kind" "$drive" "$filesystem" "$mode" "$references:$configured"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$root" "$kind" "$drive" "$filesystem" "$mode" "$references:$configured" "$found_paths"
 done
